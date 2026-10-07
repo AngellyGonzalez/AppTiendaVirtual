@@ -1,25 +1,23 @@
 import { useEffect, useState } from "react";
 import { View, Text, TextInput, FlatList, StyleSheet, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, getDocs } from "firebase/firestore";
 
 import { db } from "../firebase/config";
 import Categoria from "../Components/Categoria";
 import Producto from "../Components/Producto";
 
-
 const Catalogo = () => {
-
- const [categorias, setCategorias] = useState([]);
- const [productos, setProductos] = useState([]);
-const [busqueda, setBusqueda] = useState("");
+  const [categorias, setCategorias] = useState([]);
+  const [productos, setProductos] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
 
   useEffect(() => {
     obtenerCategorias();
-    obtenerProductos();
+    obtenerProductos(); 
   }, []);
 
-const obtenerCategorias = async () => {
+  const obtenerCategorias = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "Categorias"));
       const datos = [
@@ -53,26 +51,33 @@ const obtenerCategorias = async () => {
     }
   };
 
-  const obtenerProductosPorCategoria = async (categoriaId) => {
-  try {
-    const consulta = query(
-      collection(db, "Productos"),
-      where("categoriaId", "==", categoriaId) 
-    );
-    const consultaSnapshot = await getDocs(consulta);
-    const datos = [];
-    consultaSnapshot.forEach((documento) => {
-      datos.push({ id: documento.id, ...documento.data() });
-    });
-    setProductos(datos);
-  } catch (error) {
-    console.error("Error obteniendo productos por categoría:", error);
-  }
-};
+  const obtenerProductosPorCategoria = async (nombreCategoria) => {
+    try {
+      
+      if (nombreCategoria === "Todos") {
+        obtenerProductos();
+        return;
+      }
 
-const productosFiltrados = productos.filter((producto) =>
-producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
-);
+  
+      const consulta = query(
+        collection(db, "Productos"),
+        where("categoria", "==", nombreCategoria) 
+      );
+      const consultaSnapshot = await getDocs(consulta);
+      const datos = [];
+      consultaSnapshot.forEach((documento) => {
+        datos.push({ id: documento.id, ...documento.data() });
+      });
+      setProductos(datos);
+    } catch (error) {
+      console.error("Error obteniendo productos por categoría:", error);
+    }
+  };
+
+  const productosFiltrados = productos.filter((producto) =>
+    producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   return (
     <ScrollView style={styles.contenedor}>
@@ -87,7 +92,7 @@ producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
         />
       </View>
 
-    <ScrollView
+   <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categorias}
@@ -99,9 +104,9 @@ producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
             icono={categoria.icono}
             onPress={() => {
               if (categoria.id === "todos") {
-                obtenerProductos(); // Trae todos los productos sin filtrar
+                obtenerProductos(); 
               } else {
-                obtenerProductosPorCategoria(categoria.id); // Filtra por la categoría seleccionada
+                obtenerProductosPorCategoria(categoria.nombre); 
               }
             }}
           />
@@ -117,7 +122,13 @@ producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
           scrollEnabled={false}
           renderItem={({ item }) => (
             <Producto
-              nombre={item.nombre}precio={item.precio}tiempo={item.tiempo}color={item.color}imagen={item.imagen}
+              nombre={item.nombre}
+              precio={item.precio}
+              tiempo={item.tiempo}
+              color={item.color}
+              // Pasamos ambas opciones por si tu componente usa 'imagen' o 'imagenUrl'
+              imagen={item.imagenUrl || item.imagen}
+              imagenUrl={item.imagenUrl || item.imagen}
             />
           )}
             keyExtractor={(item) => item.id.toString()}

@@ -4,33 +4,33 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack"; 
 import { Ionicons } from "@expo/vector-icons"; 
 
-// Importamos las pantallas actualizadas según la guía
-import Catalogo from "../Screens/Catalogo"; 
-import AdminProductosScreen from "../Screens/AdminProductosScreen";
-import FormularioProductoScreen from "../Screens/FormularioProductoScreen";
+
+import Catalogo from "./Screens/Catalogo"; 
+import VistaAdmin from "./Screens/VistaAdmin";
+import NuevoProducto from "./Screens/nuevoProducto";
 
 const Tab = createBottomTabNavigator(); 
 const Stack = createNativeStackNavigator();
 
-// STACK DEL ADMINISTRADOR: Maneja la lista y el formulario (crear/editar)
+
 function AdminStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
-        name="AdminProductos" 
-        component={AdminProductosScreen} 
+        name="VistaAdmin" 
+        component={VistaAdmin} 
         options={{ title: "Administrar productos" }} 
       />
       <Stack.Screen 
-        name="FormularioProducto" 
-        component={FormularioProductoScreen} 
+        name="nuevoProducto" 
+        component={NuevoProducto} 
         options={{ title: "Nuevo producto" }} 
       />
     </Stack.Navigator>
   );
 }
 
-// NAVEGACIÓN PRINCIPAL (Tabs inferiores + Stack)
+
 export default function Navegacion() { 
   return ( 
     <NavigationContainer> 

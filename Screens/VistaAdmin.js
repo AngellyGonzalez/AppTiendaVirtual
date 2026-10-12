@@ -8,10 +8,10 @@ export default function AdminProductosScreen({ navigation }) {
   const [productos, setProductos] = useState([]);
 
   useEffect(() => {
-    // Escucha en tiempo real los productos de la colección 'Productos'
+   
     const unsubscribe = onSnapshot(collection(db, 'Productos'), (snapshot) => {
       const lista = snapshot.docs.map(doc => ({
-        idDoc: doc.id, // Guardamos el ID del documento para editar y eliminar
+        idDoc: doc.id, 
         ...doc.data()
       }));
       setProductos(lista);
@@ -20,7 +20,7 @@ export default function AdminProductosScreen({ navigation }) {
     return () => unsubscribe();
   }, []);
 
-  // Función para eliminar un producto (Paso 6 de la guía)
+ // Función para eliminar un producto 
   const eliminarProducto = (idDoc, nombreProducto) => {
     Alert.alert(
       "Eliminar producto",
@@ -45,10 +45,10 @@ export default function AdminProductosScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      {/* Botón para Agregar Producto */}
+      // Botón para Agregar Producto 
       <TouchableOpacity 
         style={styles.botonAgregar}
-        onPress={() => navigation.navigate('FormularioProducto')}
+        onPress={() => navigation.navigate('nuevoProducto')}
       >
         <Text style={styles.textoBotonAgregar}>+ Agregar producto</Text>
       </TouchableOpacity>
@@ -68,15 +68,15 @@ export default function AdminProductosScreen({ navigation }) {
             </View>
 
             <View style={styles.accionesContainer}>
-              {/* Botón Editar */}
+              // Botón Editar 
               <TouchableOpacity 
                 style={styles.btnIcono}
-                onPress={() => navigation.navigate('FormularioProducto', { producto: item })}
+                onPress={() => navigation.navigate('nuevoProducto', { producto: item })}
               >
                 <Ionicons name="pencil" size={18} color="#D4A373" />
               </TouchableOpacity>
 
-              {/* Botón Eliminar */}
+              // Botón Eliminar
               <TouchableOpacity 
                 style={styles.btnIcono}
                 onPress={() => eliminarProducto(item.idDoc, item.nombre)}

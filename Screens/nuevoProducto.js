@@ -4,7 +4,7 @@ import { db } from '../firebase/config';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
 export default function FormularioProductoScreen({ route, navigation }) {
-  // Verificamos si nos llegó un producto para editar
+ 
   const productoEditando = route.params?.producto;
 
   const [id, setId] = useState('');
@@ -17,7 +17,7 @@ export default function FormularioProductoScreen({ route, navigation }) {
 
   useEffect(() => {
     if (productoEditando) {
-      // Si estamos editando, rellenamos los estados (convertimos los números a String para el TextInput)
+      
       setId(productoEditando.id ? productoEditando.id.toString() : '');
       setCategoriaId(productoEditando.categoriaId ? productoEditando.categoriaId.toString() : '');
       setNombre(productoEditando.nombre || '');
@@ -29,34 +29,33 @@ export default function FormularioProductoScreen({ route, navigation }) {
   }, [productoEditando]);
 
   const guardarOActualizarProducto = async () => {
-    // Validamos que los campos obligatorios no estén vacíos
+   
     if (!nombre || !precio || !categoriaId) {
       Alert.alert('Error', 'Por favor completa al menos Nombre, Precio e ID de Categoría');
       return;
     }
     
     try {
-      // Guardamos los datos asegurando que los campos numéricos usen Number() según la guía
+      
       const datosProducto = {
         id: Number(id) || 0,
         categoriaId: Number(categoriaId) || 0,
         nombre: nombre,
         precio: Number(precio) || 0,
         color: color,
-        imagenUrl: imagen, // Mantenemos compatibilidad con el catálogo
         imagen: imagen,
         tiempo: tiempo || 'Nuevo',
       };
 
       if (productoEditando) {
-        // Actualizar producto existente (Paso 5)
+       
         const docRef = doc(db, 'Productos', productoEditando.idDoc);
         await updateDoc(docRef, datosProducto);
         Alert.alert('Éxito', 'Producto actualizado correctamente', [
           { text: 'OK', onPress: () => navigation.goBack() }
         ]);
       } else {
-        // Crear nuevo producto (Paso 4)
+       
         await addDoc(collection(db, 'Productos'), datosProducto);
         Alert.alert('Éxito', 'Producto agregado correctamente', [
           { text: 'OK', onPress: () => navigation.goBack() }

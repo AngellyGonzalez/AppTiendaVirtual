@@ -51,30 +51,32 @@ const Catalogo = () => {
     }
   };
 
-  const obtenerProductosPorCategoria = async (nombreCategoria) => {
+  const obtenerProductosPorCategoria = async (categoriaItem) => {
     try {
-      
-      if (nombreCategoria === "Todos") {
+      if (categoriaItem.id === "todos") {
         obtenerProductos();
         return;
       }
 
-  
-      const consulta = query(
-        collection(db, "Productos"),
-        where("categoria", "==", nombreCategoria) 
-      );
-      const consultaSnapshot = await getDocs(consulta);
+      const querySnapshot = await getDocs(collection(db, "Productos"));
       const datos = [];
-      consultaSnapshot.forEach((documento) => {
-        datos.push({ id: documento.id, ...documento.data() });
+      
+      querySnapshot.forEach((doc) => {
+        const prod = doc.data();
+        
+        if (
+          Number(prod.categoriaId) === Number(categoriaItem.id) || 
+          Number(prod.categoriaId) === Number(categoriaItem.categoriaId)
+        ) {
+          datos.push({ id: doc.id, ...prod });
+        }
       });
+      
       setProductos(datos);
     } catch (error) {
       console.error("Error obteniendo productos por categoría:", error);
     }
   };
-
   const productosFiltrados = productos.filter((producto) =>
     producto.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
@@ -92,7 +94,7 @@ const Catalogo = () => {
         />
       </View>
 
-   <ScrollView
+  <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categorias}
@@ -102,13 +104,7 @@ const Catalogo = () => {
             key={categoria.id} 
             nombre={categoria.nombre} 
             icono={categoria.icono}
-            onPress={() => {
-              if (categoria.id === "todos") {
-                obtenerProductos(); 
-              } else {
-                obtenerProductosPorCategoria(categoria.nombre); 
-              }
-            }}
+            onPress={() => obtenerProductosPorCategoria(categoria)}
           />
         ))}
       </ScrollView>
@@ -126,9 +122,8 @@ const Catalogo = () => {
               precio={item.precio}
               tiempo={item.tiempo}
               color={item.color}
-              // Pasamos ambas opciones por si tu componente usa 'imagen' o 'imagenUrl'
               imagen={item.imagenUrl || item.imagen}
-              imagenUrl={item.imagenUrl || item.imagen}
+              
             />
           )}
             keyExtractor={(item) => item.id.toString()}

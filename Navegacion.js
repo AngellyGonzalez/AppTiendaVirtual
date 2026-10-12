@@ -4,40 +4,40 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack"; 
 import { Ionicons } from "@expo/vector-icons"; 
 
-
-import Catalogo from "./Screens/Catalogo"; 
-import VistaAdmin from "./Screens/VistaAdmin";
-import NuevoProducto from "./Screens/nuevoProducto";
+// Importamos las pantallas actualizadas según la guía
+import Catalogo from "../Screens/Catalogo"; 
+import AdminProductosScreen from "../Screens/AdminProductosScreen";
+import FormularioProductoScreen from "../Screens/FormularioProductoScreen";
 
 const Tab = createBottomTabNavigator(); 
 const Stack = createNativeStackNavigator();
 
-// STACK DEL ADMINISTRADOR: 
+// STACK DEL ADMINISTRADOR: Maneja la lista y el formulario (crear/editar)
 function AdminStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
-        name="VistaAdmin" 
-        component={VistaAdmin} 
-        options={{ title: "Lista de Productos (Admin)" }} 
+        name="AdminProductos" 
+        component={AdminProductosScreen} 
+        options={{ title: "Administrar productos" }} 
       />
       <Stack.Screen 
-        name="nuevoProducto" 
-        component={NuevoProducto} 
-        options={{ title: "Agregar Nuevo Producto" }} 
+        name="FormularioProducto" 
+        component={FormularioProductoScreen} 
+        options={{ title: "Nuevo producto" }} 
       />
     </Stack.Navigator>
   );
 }
 
-// (Catálogo y Administrador)
-export default function App() { 
+// NAVEGACIÓN PRINCIPAL (Tabs inferiores + Stack)
+export default function Navegacion() { 
   return ( 
     <NavigationContainer> 
       <Tab.Navigator screenOptions={{ headerShown: false }}> 
         {/* Pestaña 1: Catálogo */}
         <Tab.Screen 
-          name="CatálogoTab" 
+          name="CatalogoTab" 
           component={Catalogo} 
           options={{ 
             title: 'Catálogo', 
@@ -47,14 +47,14 @@ export default function App() {
           }} 
         /> 
 
-        // agregar productos 
+        {/* Pestaña 2: Administración (Stack) */}
         <Tab.Screen 
           name="AdminTab" 
           component={AdminStack} 
           options={{ 
-            title: 'Administración', 
+            title: 'Admin Productos', 
             tabBarIcon: ({ color, size }) => ( 
-              <Ionicons name="settings-outline" size={size} color={color} /> 
+              <Ionicons name="flask-outline" size={size} color={color} /> 
             ), 
           }} 
         />

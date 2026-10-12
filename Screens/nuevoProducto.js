@@ -1,31 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { db } from '../firebase/config'; 
-import { collection, addDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 
-export default function NuevoProducto({ navigation }) {
+export default function FormularioProductoScreen({ route, navigation }) {
+  // Verificamos si nos llegó un producto para editar
+  const productoEditando = route.params?.producto;
+
+  const [id, setId] = useState('');
+  const [categoriaId, setCategoriaId] = useState('');
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [imagenUrl, setImagenUrl] = useState('');
+  const [color, setColor] = useState('');
+  const [imagen, setImagen] = useState('');
+  const [tiempo, setTiempo] = useState('');
 
-  const guardarProducto = async () => {
-    if (!nombre || !precio || !categoria || !imagenUrl) {
-      Alert.alert('Error', 'Por favor completa todos los campos');
+  useEffect(() => {
+    if (productoEditando) {
+      // Si estamos editando, rellenamos los estados (convertimos los números a String para el TextInput)
+      setId(productoEditando.id ? productoEditando.id.toString() : '');
+      setCategoriaId(productoEditando.categoriaId ? productoEditando.categoriaId.toString() : '');
+      setNombre(productoEditando.nombre || '');
+      setPrecio(productoEditando.precio ? productoEditando.precio.toString() : '');
+      setColor(productoEditando.color || '');
+      setImagen(productoEditando.imagenUrl || productoEditando.imagen || '');
+      setTiempo(productoEditando.tiempo || '');
+    }
+  }, [productoEditando]);
+
+  const guardarOActualizarProducto = async () => {
+    // Validamos que los campos obligatorios no estén vacíos
+    if (!nombre || !precio || !categoriaId) {
+      Alert.alert('Error', 'Por favor completa al menos Nombre, Precio e ID de Categoría');
       return;
     }
     
     try {
-   await addDoc(collection(db, "Productos"), {
-  nombre: nombre,
-  precio: precio.replace('$', '').trim(), 
-  categoria: categoria,
-  imagenUrl: imagenUrl,
-});
+      // Guardamos los datos asegurando que los campos numéricos usen Number() según la guía
+      const datosProducto = {
+        id: Number(id) || 0,
+        categoriaId: Number(categoriaId) || 0,
+        nombre: nombre,
+        precio: Number(precio) || 0,
+        color: color,
+        imagenUrl: imagen, // Mantenemos compatibilidad con el catálogo
+        imagen: imagen,
+        tiempo: tiempo || 'Nuevo',
+      };
 
-      Alert.alert('Éxito', 'Producto agregado correctamente', [
-        { text: 'OK', onPress: () => navigation.goBack() }
-      ]);
+      if (productoEditando) {
+        // Actualizar producto existente (Paso 5)
+        const docRef = doc(db, 'Productos', productoEditando.idDoc);
+        await updateDoc(docRef, datosProducto);
+        Alert.alert('Éxito', 'Producto actualizado correctamente', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      } else {
+        // Crear nuevo producto (Paso 4)
+        await addDoc(collection(db, 'Productos'), datosProducto);
+        Alert.alert('Éxito', 'Producto agregado correctamente', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
+      }
     } catch (error) {
       console.error("Error al guardar: ", error);
       Alert.alert('Error', 'No se pudo guardar el producto.');
@@ -34,29 +70,68 @@ export default function NuevoProducto({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.label}>Nombre del Producto</Text>
-      <TextInput style={styles.input} placeholder="Ej. Smartwatch" value={nombre} onChangeText={setNombre} />
+      <Text style={styles.label}>ID</Text>
+      <TextInput style={styles.input} placeholder="Ej. 3" keyboardType="numeric" value={id} onChangeText={setId} />
+
+      <Text style={styles.label}>ID Categoría</Text>
+      <TextInput style={styles.input} placeholder="Ej. 1" keyboardType="numeric" value={categoriaId} onChangeText={setCategoriaId} />
+
+      <Text style={styles.label}>Nombre</Text>
+      <TextInput style={styles.input} placeholder="Nombre del producto" value={nombre} onChangeText={setNombre} />
 
       <Text style={styles.label}>Precio</Text>
-      <TextInput style={styles.input} placeholder="Ej. 120" keyboardType="numeric" value={precio} onChangeText={setPrecio} />
+      <TextInput style={styles.input} placeholder="Ej. 27" keyboardType="numeric" value={precio} onChangeText={setPrecio} />
 
-      <Text style={styles.label}>Categoría</Text>
-      <TextInput style={styles.input} placeholder="Ej. Electrónica" value={categoria} onChangeText={setCategoria} />
+      <Text style={styles.label}>Color</Text>
+      <TextInput style={styles.input} placeholder="Ej. #F5AFC1" value={color} onChangeText={setColor} />
 
-      <Text style={styles.label}>URL de la Imagen</Text>
-      <TextInput style={styles.input} placeholder="https://..." value={imagenUrl} onChangeText={setImagenUrl} autoCapitalize="none" />
+      <Text style={styles.label}>Imagen</Text>
+      <TextInput style={styles.input} placeholder="URL de la imagen" value={imagen} onChangeText={setImagen} autoCapitalize="none" />
 
-      <TouchableOpacity style={styles.botonGuardar} onPress={guardarProducto}>
-        <Text style={styles.textoBoton}>Guardar Producto</Text>
+      <Text style={styles.label}>Tiempo</Text>
+      <TextInput style={styles.input} placeholder="Ej. 10 hours ago" value={tiempo} onChangeText={setTiempo} />
+
+      <TouchableOpacity style={styles.botonGuardar} onPress={guardarOActualizarProducto}>
+        <Text style={styles.textoBoton}>
+          {productoEditando ? 'ACTUALIZAR PRODUCTO' : 'GUARDAR PRODUCTO'}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#333', marginBottom: 6 },
-  input: { borderWidth: 1, borderColor: '#ddd', padding: 12, borderRadius: 8, fontSize: 16, marginBottom: 16, backgroundColor: '#fafafa' },
-  botonGuardar: { backgroundColor: '#00b894', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10, marginBottom: 30 },
-  textoBoton: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: '#fff' 
+  },
+  label: { 
+    fontSize: 13, 
+    fontWeight: 'bold', 
+    color: '#333', 
+    marginBottom: 4 
+  },
+  input: { 
+    borderWidth: 1, 
+    borderColor: '#ddd', 
+    padding: 10, 
+    borderRadius: 8, 
+    fontSize: 15, 
+    marginBottom: 12, 
+    backgroundColor: '#fafafa' 
+  },
+  botonGuardar: { 
+    backgroundColor: '#2196F3', 
+    padding: 15, 
+    borderRadius: 8, 
+    alignItems: 'center', 
+    marginTop: 10, 
+    marginBottom: 40 
+  },
+  textoBoton: { 
+    color: '#fff', 
+    fontSize: 16, 
+    fontWeight: 'bold' 
+  }
 });

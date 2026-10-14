@@ -7,7 +7,7 @@ import { db } from "../firebase/config";
 import Categoria from "../Components/Categoria";
 import Producto from "../Components/Producto";
 
-const Catalogo = () => {
+const Catalogo = ({ navigation }) => {
   const [categorias, setCategorias] = useState([]);
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -123,9 +123,18 @@ const Catalogo = () => {
               tiempo={item.tiempo}
               color={item.color}
               imagen={item.imagenUrl || item.imagen}
-              
+              onPress={() => {
+                navigation.navigate("DetalleProducto", {
+                  nombre: item.nombre,
+                  precio: item.precio,
+                  categoria: item.tiempo,
+                  color: item.color,
+                  imagen: item.imagen,
+                });
+              }}
             />
           )}
+ 
             keyExtractor={(item) => item.id.toString()}
             horizontal={false}
             numColumns={2}
